@@ -1,0 +1,97 @@
+################# Read data ###########################
+## xlsReadWrite包中的write.xls函数，可以保存为xls格式的
+## library(XLConnect)
+Sys.setenv(JAVA_HOME='C:\\Program Files (x86)\\Java\\jre1.8.0_45') # for 64-bit version
+## Sys.setenv(JAVA_HOME='C:\\Program Files\\Java\\jre1.8.0_31') # for 64-bit version
+## C:\Program Files\Java\jre1.8.0_31
+library(rJava)
+library(xlsx)
+## library(xlsx) just try the following:
+## Does it work? Done!!
+## Be careful, check the file name every time when you want to use this procedure to mearge data sets.
+## #######################################################
+
+submitters <- read.xlsx2("Y:/PH.D/PSU/Part-time job/MOOC/Attempts/438samples(countries_that_fewer_than 25).xlsx", 1)
+head(submitters)
+
+Ques <- read.xlsx2("Y:/PH.D/PSU/Part-time job/MOOC/Attempts/Questions.xlsx", 1)
+head(Ques)
+
+sub.list <- split(submitters, rownames(submitters))
+length(sub.list)
+sub.list[1]
+## tryID <- sub.list$'538'$Session_UserID
+## as.character(tryID)
+
+## demo$Shoe_Tower_Session_UserID == as.character(tryID)
+## pos <- match(as.character(tryID),demo$Shoe_Tower_Session_UserID)
+## matched <- demo[demo$Shoe_Tower_Session_UserID == as.character(tryID),1:6]
+## matched
+## cbind(sub.list$'1',demo[pos,])
+
+consolida <- function(row){
+    sesoID <- row$Coursera_UserID
+    pos <- match(as.character(sesoID), Ques$Coursera_UserID)
+    ## matched <- demo[demo$Shoe_Tower_Session_UserID == as.character(sesoID),1:6]
+    return(cbind(row,Ques[pos,]))
+}
+
+results <- lapply(sub.list,consolida)
+length(results$'1')
+length(results)
+results$'2'
+
+is.list(results)
+combined <- do.call(rbind.data.frame, results)
+combined[1:2,]
+#######################################################
+## save file ##
+write.xlsx2(x = combined, file = "Y:/PH.D/PSU/Part-time job/MOOC/Attempts/ST437samples_Ques.xlsx",sheetName = "submitter", row.names = FALSE)
+
+
+##############
+
+combined[,3]
+combined[1,6]
+as.numeric(as.character(combined[1,6]))
+summary(combined[1,6])
+#######################################################
+## Simple analysis ##
+height <- as.numeric(as.character(combined$TowerHeight))
+summary(height)
+boxplot(height,xlab="shoe tower height")
+hist(height)
+## qqnorm(height)
+
+numshoes <- as.numeric(as.character(combined$NumShoes))
+summary(numshoes)
+boxplot(numshoes)
+hist(numshoes)
+
+
+T.value <- as.numeric(as.character(combined$T.VALUE))
+summary(T.value)
+boxplot(T.value)
+hist(T.value)
+
+betf.rate <- as.numeric(as.character(combined$betf.rate))
+boxplot(betf.rate)
+hist(betf.rate)
+
+crtv.rate <- as.numeric(as.character(combined$crtv.rate))
+boxplot(crtv.rate)
+hist(crtv.rate)
+
+Country <- combined$Country
+table(Country)
+hist(table(Country))
+## pie(Country)
+Gender <- combined$Gen_der
+summary(Gender)
+pie(table(Gender))
+## Occupation <- combined$Occupation
+Score <- as.numeric(as.character(combined$Score))
+summary(Score)
+boxplot(Score)
+hist(Score)
+
