@@ -10,43 +10,45 @@ library(xlsx)
 ## Does it work? Done!!
 ## Be careful, check the file name every time when you want to use this procedure to mearge data sets.
 ## #######################################################
+submitters <- normalizePath("Y:/PH.D/PSU/Part-time job/MOOC/Attempts/Categories/1222(Withoutoutlierinln_Tvalue)2.xlsx")
 
-submitters <- read.xlsx2("Y:/PH.D/PSU/Part-time job/MOOC/Attempts/1278samples_Ques(test).xlsx", 1)
-head(submitters)
+Ques <- normalizePath("Y:/PH.D/PSU/Part-time job/MOOC/Attempts/Categories/1953_samples_with_categories.xlsx")
 
-Ques <- read.xlsx2("Y:/PH.D/PSU/Part-time job/MOOC/Attempts/Questions.xlsx", 1)
-head(Ques)
+data1 <- read.xlsx2(submitters, 1)
+data2 <- read.xlsx2(Ques, 1)
 
-sub.list <- split(submitters, rownames(submitters))
-length(sub.list)
-sub.list[1]
-## tryID <- sub.list$'538'$Session_UserID
-## as.character(tryID)
+mergeID <- "Coursera_UserID"
 
-## demo$Shoe_Tower_Session_UserID == as.character(tryID)
-## pos <- match(as.character(tryID),demo$Shoe_Tower_Session_UserID)
-## matched <- demo[demo$Shoe_Tower_Session_UserID == as.character(tryID),1:6]
-## matched
-## cbind(sub.list$'1',demo[pos,])
 
-consolida <- function(row){
-    sesoID <- row$Coursera_UserID
-    pos <- match(as.character(sesoID), Ques$Coursera_UserID)
-    ## matched <- demo[demo$Shoe_Tower_Session_UserID == as.character(sesoID),1:6]
-    return(cbind(row,Ques[pos,]))
+    ## function for mergeing.
+    ## match each row by Coursera_UserID
+    ## Ques is global data set
+    ## rowname is splited raw data, which is "submitters"
+
+merging <- function(original, new, mergeID){
+    dataOriginal <- read.xlsx2(original, 1)
+    dataNew <- read.xlsx2(new, 1)
+    sub.list <- split(dataOriginal, rownames(dataOriginal))
+
+    consolida <- function(row){
+        sesoID <- row$Coursera_UserID
+        pos <- match(as.character(sesoID), dataNew$Coursera_UserID)
+        ## matched <- demo[demo$Shoe_Tower_Session_UserID == as.character(sesoID),1:6]
+        return(cbind(row, dataNew[pos,]))
+        ## combine all columns in the question data set to each row.
+    }
+    results <- lapply(sub.list, consolida)
+    return (do.call(rbind.data.frame, results))
 }
 
-results <- lapply(sub.list,consolida)
-length(results$'1')
-length(results)
-results$'2'
+final <- merging(submitters, Ques, mergeID)
 
-is.list(results)
-combined <- do.call(rbind.data.frame, results)
-combined[1:2,]
+final[1,]
+length(final[,1])
+
 #######################################################
 ## save file ##
-write.xlsx2(x = combined, file = "Y:/PH.D/PSU/Part-time job/MOOC/Attempts/ST437samples_Ques.xlsx",sheetName = "submitter", row.names = FALSE)
+write.xlsx2(x = final, file = "Y:/PH.D/PSU/Part-time job/MOOC/Attempts/Categories/1222_with_categories.xlsx",sheetName = "submitter", row.names = FALSE)
 
 
 ##############
